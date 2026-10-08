@@ -101,9 +101,9 @@ async function fetchPlaces(n,c,pages=3){const out=[],P=D.cfg.prov;
   const j=await r.json();if(j.error)throw new Error(j.error.message);
   for(const p of j.places||[])out.push({id:p.id,nome:p.displayName?.text||'',tel:p.internationalPhoneNumber||p.nationalPhoneNumber||'',nota:p.rating||0,aval:p.userRatingCount||0,link:p.websiteUri||'',end:p.formattedAddress||'',maps:p.googleMapsUri||''});
   tok=j.nextPageToken;if(!tok)break}}
- else{for(let pg=1;pg<=pages;pg++){const r=await fetch('https://google.serper.dev/maps',{method:'POST',headers:{'X-API-KEY':D.cfg.skey,'Content-Type':'application/json'},body:JSON.stringify({q:n+' em '+c,gl:'br',hl:'pt-br',page:pg})});
+ else{let ll=null;for(let pg=1;pg<=pages;pg++){const r=await fetch('https://google.serper.dev/maps',{method:'POST',headers:{'X-API-KEY':D.cfg.skey,'Content-Type':'application/json'},body:JSON.stringify({q:n+' em '+c,gl:'br',hl:'pt-br',page:pg,...(pg>1?{ll}:{})})});
   const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.message||('Erro '+r.status));const ps=j.places||[];
-  ps.forEach(p=>out.push({id:p.placeId||p.cid||(p.title+'|'+p.address),nome:p.title||'',tel:p.phoneNumber||'',nota:p.rating||0,aval:p.ratingCount||0,link:p.website||'',end:p.address||'',maps:p.cid?'https://www.google.com/maps?cid='+p.cid:''}));if(ps.length<10)break}}
+  ps.forEach(p=>out.push({id:p.placeId||p.cid||(p.title+'|'+p.address),nome:p.title||'',tel:p.phoneNumber||'',nota:p.rating||0,aval:p.ratingCount||0,link:p.website||'',end:p.address||'',maps:p.cid?'https://www.google.com/maps?cid='+p.cid:''}));if(pg===1){const g=ps.filter(p=>typeof p.latitude==='number'&&typeof p.longitude==='number');if(g.length)ll=`@${(g.reduce((a,p)=>a+p.latitude,0)/g.length).toFixed(6)},${(g.reduce((a,p)=>a+p.longitude,0)/g.length).toFixed(6)},12z`}if(ps.length<10||!ll)break}}
  return out}
 const NETERR='O navegador não conseguiu conectar à fonte de dados. Verifique a internet e a chave; se continuar, a fonte pode estar bloqueando chamadas diretas do navegador.';
 $('#go').onclick=async()=>{const n=$('#nicho').value.trim(),uf=$('#uf').value,cid=$('#cidade').value,c=cid?`${cid}, ${uf}`:UFS[uf];if(!n)return;
